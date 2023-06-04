@@ -1,5 +1,5 @@
 import express from 'express';
-import mysql from 'mysql';
+import mysql from 'mysql2';
 import cors from 'cors';
 
 const app = express();
@@ -9,11 +9,11 @@ app.use(express.json());
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: '',
+  password: 'ibrahim',
   database: 'control_inventario',
 });
 
-app.get('/', (req, res) => {
+app.get('/computadoras', (req, res) => {
   const sql = 'SELECT * FROM computadoras';
   db.query(sql, (err, result) => {
     if (err) return res.json({ message: 'Error inside server' });
@@ -21,7 +21,16 @@ app.get('/', (req, res) => {
   });
 });
 
+app.get('/lugares', (req, res) => {
+  const sql = 'SELECT * FROM lugar';
+  db.query(sql, (err, result) => {
+    if (err) return res.json({ message: 'Error inside server' });
+    return res.json(result);
+  });
+});
+
 app.post('/computadoras', (req, res) => {
+  console.log(req);
   const sql =
     'INSERT INTO computadoras (`lugar`,`cpucomputadora`,`ram`,`discohd`,`estado`) VALUES (?)';
   const values = [
