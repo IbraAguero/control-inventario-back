@@ -13,6 +13,22 @@ const db = mysql.createConnection({
   database: 'control_inventario',
 });
 
+app.get('/lugares', (req, res) => {
+  const sql = 'SELECT * FROM lugar';
+  db.query(sql, (err, result) => {
+    if (err) return res.json({ message: 'Error inside server' });
+    return res.json(result);
+  });
+});
+
+app.get('/estados', (req, res) => {
+  const sql = 'SELECT * FROM estado';
+  db.query(sql, (err, result) => {
+    if (err) return res.json({ message: 'Error inside server' });
+    return res.json(result);
+  });
+});
+
 app.get('/computadoras', (req, res) => {
   const sql = 'SELECT * FROM computadoras';
   db.query(sql, (err, result) => {
@@ -21,10 +37,63 @@ app.get('/computadoras', (req, res) => {
   });
 });
 
-app.get('/lugares', (req, res) => {
-  const sql = 'SELECT * FROM lugar';
+// Peticiones para los monitores
+// GET
+app.get('/monitores', (req, res) => {
+  const sql = 'SELECT * FROM control_inventario.vwmonitor';
   db.query(sql, (err, result) => {
     if (err) return res.json({ message: 'Error inside server' });
+    return res.json(result);
+  });
+});
+
+app.get('/monitores/fabricantes', (req, res) => {
+  const sql = 'SELECT * FROM monitorfabricante';
+  db.query(sql, (err, result) => {
+    if (err) return res.json({ message: 'Error inside server' });
+    return res.json(result);
+  });
+});
+
+app.get('/monitores/tipos', (req, res) => {
+  const sql = 'SELECT * FROM monitortipo';
+  db.query(sql, (err, result) => {
+    if (err) return res.json({ message: 'Error inside server' });
+    return res.json(result);
+  });
+});
+
+app.get('/monitores/modelos/:id', (req, res) => {
+  const sql = 'SELECT * FROM monitormodelo WHERE idFabricante = ?';
+  const id = req.params.id;
+  db.query(sql, [id], (err, result) => {
+    if (err) return res.json(err);
+    return res.json(result);
+  });
+});
+
+// POST
+app.post('/monitores', (req, res) => {
+  console.log(req);
+  const sql =
+    'INSERT INTO monitor (`nroInventario`,`idlugar`,`idfabricante`, `idmodelo`,`idtipo`,`nroserie`,`pulgadas`,`idestado`) VALUES (?)';
+  const values = [
+    req.body.nroinventario,
+    req.body.lugar,
+    req.body.fabricante,
+    req.body.modelo,
+    req.body.tipo,
+    req.body.nroserie,
+    req.body.pulgadas,
+    req.body.estado,
+  ];
+
+  console.log(req);
+  console.log(values);
+
+  db.query(sql, [values], (err, result) => {
+    if (err) return res.json(err);
+    console.log(result);
     return res.json(result);
   });
 });
