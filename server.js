@@ -135,6 +135,17 @@ app.post('/computadoras', (req, res) => {
   });
 });
 
+// DELETE
+
+app.delete('/monitores/delete/:id', (req, res) => {
+  const sql = 'DELETE FROM monitor WHERE nroinventario = ?';
+  const id = req.params.id;
+  db.query(sql, [id], (err, result) => {
+    if (err) return res.json(err);
+    return res.json(result);
+  });
+});
+
 app.get('/read/:id', (req, res) => {
   const sql = 'SELECT * FROM computadoras WHERE ID = ?';
   const id = req.params.id;
