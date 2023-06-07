@@ -72,6 +72,15 @@ app.get('/monitores/modelos/:id', (req, res) => {
   });
 });
 
+app.get('/monitores/read/:id', (req, res) => {
+  const id = req.params.id;
+  const sql = `CALL control_inventario.spGetMonitorForNroInv('${id}')`;
+  db.query(sql, [id], (err, result) => {
+    if (err) return res.json(err);
+    return res.json(result[0]);
+  });
+});
+
 // VALIDATION
 
 app.get('/monitores/validacion/:nroinventario', (req, res) => {
@@ -114,6 +123,19 @@ app.post('/monitores', (req, res) => {
   });
 });
 
+// DELETE
+
+app.delete('/monitores/delete/:id', (req, res) => {
+  const sql = 'DELETE FROM monitor WHERE nroinventario = ?';
+  const id = req.params.id;
+  db.query(sql, [id], (err, result) => {
+    if (err) return res.json(err);
+    return res.json(result);
+  });
+});
+
+// Peticiones para las computadoras
+
 app.post('/computadoras', (req, res) => {
   console.log(req);
   const sql =
@@ -130,17 +152,6 @@ app.post('/computadoras', (req, res) => {
   console.log(values);
 
   db.query(sql, [values], (err, result) => {
-    if (err) return res.json(err);
-    return res.json(result);
-  });
-});
-
-// DELETE
-
-app.delete('/monitores/delete/:id', (req, res) => {
-  const sql = 'DELETE FROM monitor WHERE nroinventario = ?';
-  const id = req.params.id;
-  db.query(sql, [id], (err, result) => {
     if (err) return res.json(err);
     return res.json(result);
   });
