@@ -72,6 +72,22 @@ app.get('/monitores/modelos/:id', (req, res) => {
   });
 });
 
+// VALIDATION
+
+app.get('/monitores/validacion/:nroinventario', (req, res) => {
+  const nroinventario = req.params.nroinventario;
+  const sql = 'SELECT COUNT(*) AS count FROM monitor WHERE nroinventario = ?';
+  db.query(sql, [nroinventario], (err, result) => {
+    if (err) {
+      console.error('Error al realizar la consulta:', err);
+      return res.status(500).json({ error: 'Error al realizar la consulta' });
+    }
+    const count = result[0].count;
+    const isRegistered = count > 0;
+    res.json({ isRegistered });
+  });
+});
+
 // POST
 app.post('/monitores', (req, res) => {
   console.log(req);
