@@ -54,6 +54,18 @@ app.get('/monitores/fabricantes', (req, res) => {
     return res.json(result);
   });
 });
+app.get('/monitores/fabricantes2', (req, res) => {
+  const sql = `
+    SELECT f.id, f.nombre, JSON_ARRAYAGG(JSON_OBJECT('id', m.id, 'nombre', m.nombre)) AS modelos
+    FROM monitorfabricante f
+    LEFT JOIN monitormodelo m ON f.id = m.IDFabricante
+    GROUP BY f.id, f.nombre
+  `;
+  db.query(sql, (err, result) => {
+    if (err) return res.json({ message: 'Error inside server' });
+    return res.json(result);
+  });
+});
 
 app.get('/monitores/tipos', (req, res) => {
   const sql = 'SELECT * FROM monitortipo';
@@ -77,7 +89,15 @@ app.get('/monitores/read/:id', (req, res) => {
   const sql = `CALL control_inventario.spGetMonitorForNroInv('${id}')`;
   db.query(sql, [id], (err, result) => {
     if (err) return res.json(err);
-    return res.json(result[0]);
+    return res.json(result);
+  });
+});
+app.get('/monitores/modelos/read/:id', (req, res) => {
+  const id = req.params.id;
+  const sql = `CALL control_inventario.spGetModelosPorFabricante('${id}')`;
+  db.query(sql, [id], (err, result) => {
+    if (err) return res.json(err);
+    return res.json(result);
   });
 });
 
@@ -121,6 +141,30 @@ app.post('/monitores', (req, res) => {
     console.log(result);
     return res.json(result);
   });
+});
+
+app.put('/monitores/update/:id', (req, res) => {
+  const id = req.params.id;
+  const sql =
+    'UPDATE monitor SET `nroserie`=?,`idlugar`=?, `idfabricante`=?, `idmodelo`=?,`idtipo`=?,`pulgadas`=?,`idestado`=?, `fechaUltModificacion`=? WHERE nroinventario = ?';
+  db.query(
+    sql,
+    [
+      req.body.nroserie,
+      req.body.lugar,
+      req.body.fabricante,
+      req.body.modelo,
+      req.body.tipo,
+      req.body.pulgadas,
+      req.body.estado,
+      req.body.fechaUltModificacion,
+      id,
+    ],
+    (err, result) => {
+      if (err) return res.json(err);
+      return res.json(result);
+    }
+  );
 });
 
 // DELETE
