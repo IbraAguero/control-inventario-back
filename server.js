@@ -1,6 +1,7 @@
 import express from 'express';
 import mysql from 'mysql2';
 import cors from 'cors';
+import bcrypt from 'bcrypt';
 
 const app = express();
 app.use(cors());
@@ -11,6 +12,56 @@ const db = mysql.createConnection({
   user: 'root',
   password: 'ibrahim',
   database: 'control_inventario',
+});
+
+app.get('/', (req, res) => {
+  const sql = 'SELECT * FROM User';
+  db.query(sql, (err, result) => {
+    if (err) return res.json({ message: err });
+    return res.json(result);
+  });
+});
+
+app.post('/checkUserExistence', (req, res) => {
+  const { usuario } = req.body;
+
+  const sql = 'SELECT * FROM User WHERE usuario = ?';
+  db.query(sql, [usuario], (err, data) => {
+    if (err) {
+      return res.json(err);
+    }
+    if (data.length > 0) {
+      return res.json({ exists: true }); // El usuario existe
+    } else {
+      return res.json({ exists: false }); // El usuario no existe
+    }
+  });
+});
+
+app.post('/login', (req, res) => {
+  const { usuario, password } = req.body;
+
+  const sql = 'SELECT * FROM User WHERE usuario = ?';
+  db.query(sql, [usuario], (err, data) => {
+    if (err) {
+      return res.json(err);
+    }
+    if (data.length > 0) {
+      const hashedPassword = data[0].password; // Obtén la contraseña hasheada almacenada en la base de datos
+      bcrypt.compare(password, hashedPassword, (compareErr, result) => {
+        if (compareErr) {
+          return res.json(compareErr);
+        }
+        if (result) {
+          return res.json('Success');
+        } else {
+          return res.json('Invalid credentials');
+        }
+      });
+    } else {
+      return res.json('Invalid credentials');
+    }
+  });
 });
 
 app.get('/lugares', (req, res) => {
