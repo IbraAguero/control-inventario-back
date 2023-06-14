@@ -64,6 +64,37 @@ app.post('/login', (req, res) => {
   });
 });
 
+app.post('/api/users', (req, res) => {
+  const { name, password } = req.body;
+
+  // Verifica si el nombre de usuario ya existe en la base de datos
+  const checkUserQuery = 'SELECT * FROM User WHERE usuario = ?';
+  db.query(checkUserQuery, [name], (checkUserErr, checkUserData) => {
+    if (checkUserErr) {
+      return res.json(checkUserErr);
+    }
+    if (checkUserData.length > 0) {
+      return res.json({ message: 'El nombre de usuario ya está en uso' });
+    }
+
+    // Genera el hash de la contraseña
+    bcrypt.hash(password, 10, (hashErr, hashedPassword) => {
+      if (hashErr) {
+        return res.json(hashErr);
+      }
+
+      // Inserta el nuevo usuario en la base de datos
+      const insertUserQuery = 'INSERT INTO User (usuario, password) VALUES (?, ?)';
+      db.query(insertUserQuery, [name, hashedPassword], (insertUserErr, insertUserResult) => {
+        if (insertUserErr) {
+          return res.json(insertUserErr);
+        }
+        return res.json({ message: 'Usuario creado exitosamente' });
+      });
+    });
+  });
+});
+
 app.get('/lugares', (req, res) => {
   const sql = 'SELECT * FROM lugar';
   db.query(sql, (err, result) => {
