@@ -93,6 +93,7 @@ app.post('/api/users', (req, res) => {
           if (insertUserErr) {
             return res.json(insertUserErr);
           }
+          return res.json({ message: 'Usuario creado exitosamente' });
         }
       );
     });
