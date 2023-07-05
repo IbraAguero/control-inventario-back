@@ -65,7 +65,7 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/api/users', (req, res) => {
-  const { name, password } = req.body;
+  const { name, password, email } = req.body;
 
   // Verifica si el nombre de usuario ya existe en la base de datos
   const checkUserQuery = 'SELECT * FROM User WHERE usuario = ?';
@@ -85,18 +85,77 @@ app.post('/api/users', (req, res) => {
 
       // Inserta el nuevo usuario en la base de datos
       const insertUserQuery =
-        'INSERT INTO User (usuario, password) VALUES (?, ?)';
+        'INSERT INTO User (usuario, password, email) VALUES (?, ?, ?)';
       db.query(
         insertUserQuery,
-        [name, hashedPassword],
+        [name, hashedPassword, email],
         (insertUserErr, insertUserResult) => {
           if (insertUserErr) {
             return res.json(insertUserErr);
           }
-          return res.json({ message: 'Usuario creado exitosamente' });
         }
       );
     });
+  });
+});
+
+// Ruta para cambiar la contraseña
+app.post('/api/update-password', (req, res) => {
+  const { username, currentPassword, newPassword } = req.body;
+
+  // Obtener la contraseña actual del usuario
+  const getPasswordQuery = 'SELECT password FROM User WHERE usuario = ?';
+  db.query(
+    getPasswordQuery,
+    [username],
+    (getPasswordErr, getPasswordResult) => {
+      if (getPasswordErr) {
+        return res.json(getPasswordErr);
+      }
+
+      const hashedPassword = getPasswordResult[0].password;
+
+      // Verificar si la contraseña actual coincide
+      bcrypt.compare(currentPassword, hashedPassword, (compareErr, result) => {
+        if (compareErr) {
+          return res.json(compareErr);
+        }
+        if (!result) {
+          return res.json({ message: 'La contraseña actual es incorrecta' });
+        }
+
+        // Generar el hash de la nueva contraseña
+        bcrypt.hash(newPassword, 10, (hashErr, hashedNewPassword) => {
+          if (hashErr) {
+            return res.json(hashErr);
+          }
+
+          // Actualizar la contraseña en la base de datos
+          const updatePasswordQuery =
+            'UPDATE User SET password = ? WHERE usuario = ?';
+          db.query(
+            updatePasswordQuery,
+            [hashedNewPassword, username],
+            (updateErr, updateResult) => {
+              if (updateErr) {
+                return res.json(updateErr);
+              }
+              return res.json({
+                message: 'Contraseña actualizada exitosamente',
+              });
+            }
+          );
+        });
+      });
+    }
+  );
+});
+
+app.get('/lugares', (req, res) => {
+  const sql = 'SELECT * FROM lugar';
+  db.query(sql, (err, result) => {
+    if (err) return res.json({ message: 'Error inside server' });
+    return res.json(result);
   });
 });
 
