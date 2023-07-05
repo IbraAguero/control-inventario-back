@@ -84,22 +84,19 @@ app.post('/api/users', (req, res) => {
       }
 
       // Inserta el nuevo usuario en la base de datos
-      const insertUserQuery = 'INSERT INTO User (usuario, password) VALUES (?, ?)';
-      db.query(insertUserQuery, [name, hashedPassword], (insertUserErr, insertUserResult) => {
-        if (insertUserErr) {
-          return res.json(insertUserErr);
+      const insertUserQuery =
+        'INSERT INTO User (usuario, password) VALUES (?, ?)';
+      db.query(
+        insertUserQuery,
+        [name, hashedPassword],
+        (insertUserErr, insertUserResult) => {
+          if (insertUserErr) {
+            return res.json(insertUserErr);
+          }
+          return res.json({ message: 'Usuario creado exitosamente' });
         }
-        return res.json({ message: 'Usuario creado exitosamente' });
-      });
+      );
     });
-  });
-});
-
-app.get('/lugares', (req, res) => {
-  const sql = 'SELECT * FROM lugar';
-  db.query(sql, (err, result) => {
-    if (err) return res.json({ message: 'Error inside server' });
-    return res.json(result);
   });
 });
 
@@ -129,6 +126,51 @@ app.get('/monitores', (req, res) => {
   });
 });
 
+// LUGARES
+
+app.get('/lugares', (req, res) => {
+  const sql = 'SELECT * FROM lugar';
+  db.query(sql, (err, result) => {
+    if (err) return res.json({ message: 'Error inside server' });
+    return res.json(result);
+  });
+});
+
+app.post('/lugares', (req, res) => {
+  console.log(req);
+  const sql = 'INSERT INTO lugar (`nombre`) VALUES (?)';
+  const values = [req.body.nombre];
+
+  console.log(req);
+  console.log(values);
+
+  db.query(sql, [values], (err, result) => {
+    if (err) return res.json(err);
+    console.log(result);
+    return res.json(result);
+  });
+});
+
+app.delete('/lugares/:id', (req, res) => {
+  const sql = 'DELETE FROM lugar WHERE id = ?';
+  const id = req.params.id;
+  db.query(sql, [id], (err, result) => {
+    if (err) return res.json(err);
+    return res.json(result);
+  });
+});
+
+app.put('/lugares/:id', (req, res) => {
+  const id = req.params.id;
+  const sql = 'UPDATE lugar SET `nombre`=? WHERE id = ?';
+  db.query(sql, [req.body.nombre, id], (err, result) => {
+    if (err) return res.json(err);
+    return res.json(result);
+  });
+});
+
+// MONITORES - FABRICANTE
+
 app.get('/monitores/fabricantes', (req, res) => {
   const sql = 'SELECT * FROM monitorfabricante';
   db.query(sql, (err, result) => {
@@ -136,6 +178,40 @@ app.get('/monitores/fabricantes', (req, res) => {
     return res.json(result);
   });
 });
+
+app.post('/monitores/fabricantes', (req, res) => {
+  console.log(req);
+  const sql = 'INSERT INTO monitorfabricante (`nombre`) VALUES (?)';
+  const values = [req.body.nombre];
+
+  console.log(req);
+  console.log(values);
+
+  db.query(sql, [values], (err, result) => {
+    if (err) return res.json(err);
+    console.log(result);
+    return res.json(result);
+  });
+});
+
+app.delete('/monitores/fabricantes/:id', (req, res) => {
+  const sql = 'DELETE FROM monitorfabricante WHERE id = ?';
+  const id = req.params.id;
+  db.query(sql, [id], (err, result) => {
+    if (err) return res.json(err);
+    return res.json(result);
+  });
+});
+
+app.put('/monitores/fabricantes/:id', (req, res) => {
+  const id = req.params.id;
+  const sql = 'UPDATE monitorfabricante SET `nombre`=? WHERE id = ?';
+  db.query(sql, [req.body.nombre, id], (err, result) => {
+    if (err) return res.json(err);
+    return res.json(result);
+  });
+});
+
 app.get('/monitores/fabricantes2', (req, res) => {
   const sql = `
     SELECT f.id, f.nombre, JSON_ARRAYAGG(JSON_OBJECT('id', m.id, 'nombre', m.nombre)) AS modelos
